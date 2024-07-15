@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 
 @WebServlet("/users")
 public class UserController extends HttpServlet {
@@ -29,7 +30,7 @@ public class UserController extends HttpServlet {
 
         if(username != null ) {
             User user = service.findByUsername(username);
-            if(username != null) {
+            if(user != null) {
                 resp.setStatus(200);
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
@@ -38,6 +39,12 @@ public class UserController extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 resp.getWriter().write("Usuario no encontrado");
             }
+        } else {
+            ArrayList<User> users = service.getAllUsers();
+            resp.setStatus(200);
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.getWriter().write(mapper.writeValueAsString(users));
         }
     }
 
@@ -48,5 +55,20 @@ public class UserController extends HttpServlet {
         service.saveUser(user);
         System.out.println("se guardo la clase" + user.toString());
         resp.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String idString = req.getParameter("id");
+
+        if(idString != null && !idString.isEmpty()) {
+            int id = Integer.parseInt(idString);
+            service.deleteUser(id);
+            resp.setStatus(200);
+        } else {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("No se pudo eliminar el usuario");
+        }
     }
 }
